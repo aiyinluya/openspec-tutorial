@@ -1,0 +1,320 @@
+name: Deploy Tutorial to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install marked
+        run: npm install -g marked
+
+      - name: Build Site
+        run: |
+          mkdir -p _site
+          
+          # 创建主页面
+          cat > _site/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>OpenSpec 教程 - 规范驱动开发</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background: #f5f5f5;
+              }
+              .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                min-height: 100vh;
+              }
+              .sidebar {
+                width: 300px;
+                background: #fff;
+                border-right: 1px solid #e0e0e0;
+                padding: 20px;
+                position: fixed;
+                height: 100vh;
+                overflow-y: auto;
+              }
+              .sidebar h1 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+                color: #1976d2;
+              }
+              .sidebar .subtitle {
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 20px;
+              }
+              .nav-section {
+                margin-bottom: 20px;
+              }
+              .nav-section h3 {
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                color: #999;
+                margin-bottom: 10px;
+              }
+              .nav-section a {
+                display: block;
+                padding: 8px 12px;
+                color: #333;
+                text-decoration: none;
+                border-radius: 4px;
+                margin-bottom: 4px;
+                font-size: 0.95rem;
+              }
+              .nav-section a:hover {
+                background: #f0f0f0;
+              }
+              .nav-section a.active {
+                background: #e3f2fd;
+                color: #1976d2;
+              }
+              .main-content {
+                flex: 1;
+                margin-left: 300px;
+                padding: 40px;
+                background: #fff;
+                min-height: 100vh;
+              }
+              .hero {
+                background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+                color: white;
+                padding: 60px 40px;
+                margin: -40px -40px 40px -40px;
+                text-align: center;
+              }
+              .hero h1 {
+                font-size: 3rem;
+                margin-bottom: 20px;
+              }
+              .hero p {
+                font-size: 1.3rem;
+                opacity: 0.9;
+              }
+              .cta-button {
+                display: inline-block;
+                background: white;
+                color: #1976d2;
+                padding: 15px 30px;
+                border-radius: 30px;
+                text-decoration: none;
+                font-weight: 600;
+                margin-top: 30px;
+              }
+              .chapter-list {
+                display: grid;
+                gap: 15px;
+                margin: 30px 0;
+              }
+              .chapter-card {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                border-left: 4px solid #1976d2;
+              }
+              .chapter-card h3 {
+                margin: 0 0 10px 0;
+                color: #1976d2;
+              }
+              .chapter-card p {
+                margin: 0;
+                color: #666;
+              }
+              @media (max-width: 768px) {
+                .sidebar { display: none; }
+                .main-content { margin-left: 0; padding: 20px; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <nav class="sidebar">
+                <h1>📘 OpenSpec 教程</h1>
+                <p class="subtitle">规范驱动开发指南</p>
+                <div class="nav-section">
+                  <h3>教程章节</h3>
+                  <a href="01-basics.html">01. 基础概念</a>
+                  <a href="02-installation.html">02. 安装配置</a>
+                  <a href="03-commands.html">03. 核心命令</a>
+                  <a href="04-workflow.html">04. 完整工作流</a>
+                  <a href="05-structure.html">05. 项目结构</a>
+                  <a href="06-documentation.html">06. 文档规范</a>
+                  <a href="07-examples.html">07. 实战案例</a>
+                  <a href="08-teamwork.html">08. 团队协作</a>
+                  <a href="09-advanced.html">09. 高级技巧</a>
+                  <a href="10-faq.html">10. 常见问题</a>
+                </div>
+              </nav>
+              <main class="main-content">
+                <div class="hero">
+                  <h1>OpenSpec 教程</h1>
+                  <p>从零开始学习规范驱动开发（Spec-Driven Development）<br>掌握与 AI 协作的最佳实践</p>
+                  <a href="01-basics.html" class="cta-button">开始学习 →</a>
+                </div>
+                <h2>📚 教程大纲</h2>
+                <div class="chapter-list">
+                  <div class="chapter-card">
+                    <h3>01. 基础概念</h3>
+                    <p>什么是 OpenSpec，为什么需要它，核心概念介绍</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>02. 安装配置</h3>
+                    <p>安装 OpenSpec，初始化项目，配置工作流</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>03. 核心命令</h3>
+                    <p>/opsx:propose, /opsx:apply, /opsx:archive 等命令详解</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>04. 完整工作流</h3>
+                    <p>通过暗黑模式案例演示完整开发流程</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>05. 项目结构</h3>
+                    <p>openspec/ 目录详解，四种文档的作用</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>06. 文档规范</h3>
+                    <p>如何编写高质量的 proposal、design、tasks 文档</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>07. 实战案例</h3>
+                    <p>Todo App 完整实战演示</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>08. 团队协作</h3>
+                    <p>多人协作的最佳实践</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>09. 高级技巧</h3>
+                    <p>上下文管理、CI/CD 集成、快进模式等进阶用法</p>
+                  </div>
+                  <div class="chapter-card">
+                    <h3>10. 常见问题</h3>
+                    <p>FAQ 和故障排除指南</p>
+                  </div>
+                </div>
+              </main>
+            </div>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Convert Markdown to HTML
+        run: |
+          # 定义导航 HTML
+          NAV_HTML='<nav class="sidebar"><h1>📘 OpenSpec 教程</h1><p class="subtitle">规范驱动开发指南</p><div class="nav-section"><h3>教程章节</h3><a href="01-basics.html">01. 基础概念</a><a href="02-installation.html">02. 安装配置</a><a href="03-commands.html">03. 核心命令</a><a href="04-workflow.html">04. 完整工作流</a><a href="05-structure.html">05. 项目结构</a><a href="06-documentation.html">06. 文档规范</a><a href="07-examples.html">07. 实战案例</a><a href="08-teamwork.html">08. 团队协作</a><a href="09-advanced.html">09. 高级技巧</a><a href="10-faq.html">10. 常见问题</a></div><div class="nav-section"><h3>资源</h3><a href="index.html">← 返回首页</a><a href="https://github.com/aiyinluya/openspec-tutorial" target="_blank">GitHub 仓库</a><a href="https://github.com/Fission-AI/OpenSpec" target="_blank">OpenSpec 官方</a></div></nav>'
+
+          CSS_STYLE='<style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
+          .container { max-width: 1200px; margin: 0 auto; display: flex; min-height: 100vh; }
+          .sidebar { width: 300px; background: #fff; border-right: 1px solid #e0e0e0; padding: 20px; position: fixed; height: 100vh; overflow-y: auto; }
+          .sidebar h1 { font-size: 1.5rem; margin-bottom: 10px; color: #1976d2; }
+          .sidebar .subtitle { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+          .nav-section { margin-bottom: 20px; }
+          .nav-section h3 { font-size: 0.85rem; text-transform: uppercase; color: #999; margin-bottom: 10px; }
+          .nav-section a { display: block; padding: 8px 12px; color: #333; text-decoration: none; border-radius: 4px; margin-bottom: 4px; font-size: 0.95rem; }
+          .nav-section a:hover { background: #f0f0f0; }
+          .main-content { flex: 1; margin-left: 300px; padding: 40px; background: #fff; min-height: 100vh; max-width: 900px; }
+          .main-content h1 { font-size: 2.2rem; margin-bottom: 20px; color: #1976d2; border-bottom: 3px solid #1976d2; padding-bottom: 10px; }
+          .main-content h2 { font-size: 1.6rem; margin: 35px 0 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+          .main-content h3 { font-size: 1.3rem; margin: 25px 0 10px; color: #444; }
+          .main-content h4 { font-size: 1.1rem; margin: 20px 0 8px; color: #555; }
+          .main-content p { margin-bottom: 15px; line-height: 1.8; }
+          .main-content code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: "Consolas","Monaco",monospace; font-size: 0.9em; color: #e83e8c; }
+          .main-content pre { background: #263238; color: #aed581; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
+          .main-content pre code { background: transparent; color: #aed581; padding: 0; font-size: 0.9rem; }
+          .main-content ul, .main-content ol { margin: 15px 0; padding-left: 30px; }
+          .main-content li { margin-bottom: 8px; line-height: 1.7; }
+          .main-content table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          .main-content th, .main-content td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          .main-content th { background: #f5f5f5; font-weight: 600; }
+          .main-content blockquote { border-left: 4px solid #1976d2; padding: 10px 20px; margin: 20px 0; color: #666; background: #f8f9fa; }
+          .main-content a { color: #1976d2; }
+          .main-content a:hover { text-decoration: underline; }
+          .main-content hr { border: none; border-top: 1px solid #eee; margin: 30px 0; }
+          @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; padding: 20px; } }
+          </style>'
+
+          for file in docs/*.md; do
+            filename=$(basename "$file" .md)
+            echo "Converting $file to $filename.html"
+            
+            # 获取文章标题
+            TITLE=$(head -1 "$file" | sed 's/^# //')
+            
+            # 转换 Markdown 内容
+            CONTENT=$(marked -i "$file")
+            
+            # 组合完整 HTML
+            cat > "_site/$filename.html" << EOF
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${TITLE} - OpenSpec 教程</title>
+            ${CSS_STYLE}
+          </head>
+          <body>
+            <div class="container">
+              ${NAV_HTML}
+              <main class="main-content">
+                ${CONTENT}
+              </main>
+            </div>
+          </body>
+          </html>
+          EOF
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
